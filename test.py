@@ -11,6 +11,10 @@ from sklearn.svm import SVC
 from keras_facenet import FaceNet
 from win32com.client import Dispatch
 
+attendance_dict = {}   # { "Priya": {"entry": time, "exit": None} }
+last_seen = {}         # { "Priya": timestamp }
+COOLDOWN = 10          # seconds before allowing another action
+
 CLASS_NAME = os.getenv("CLASS_NAME", "General Class")
 
 # --- Text-to-Speech Setup ---
@@ -97,45 +101,49 @@ while True:
                 date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
                 timestamp = datetime.fromtimestamp(ts).strftime("%H:%M:%S")
 
-                if recognized_name != "Unknown":
-                   if recognized_name not in attendance_dict:
-                      # ENTRY ONLY ONCE
-                      attendance_dict[recognized_name] = {"entry": timestamp}
-                      attendance_record = f"Entry - {recognized_name} at {timestamp}"
-                      speak(f"Welcome {recognized_name}, attendance taken.")
+            now = time.time()
 
-                      session_attendance.append(attendance_record)
+            if recognized_name != "Unknown":
 
-                      # Write Entry to CSV
-                      exist = os.path.isfile(f"Attendance/Attendance_{date}.csv")
-                      if exist:
-                        with open(f"Attendance/Attendance_{date}.csv", "a", newline='') as csvfile:
-                            writer = csv.writer(csvfile)
-                            writer.writerow([recognized_name, timestamp, timestamp, "Entry"])
-                      else:
-                           os.makedirs("Attendance", exist_ok=True)
-                           with open(f"Attendance/Attendance_{date}.csv", "w", newline='') as csvfile:
-                               writer = csv.writer(csvfile)
-                               writer.writerow(['NAME', 'TIME', 'ENTRY TIME', 'STATUS'])
-                               writer.writerow([recognized_name, timestamp, timestamp, "Entry"])
-                   else:
-                        pass
+               if recognized_name not in attendance_dict:
+                  # FIRST TIME → ENTRY
+                  attendance_dict[recognized_name] = {
+                  "entry": timestamp,
+                  "exit": None
+                  }
+                  last_seen[recognized_name] = now
+                  attendance_record = f"Entry - {recognized_name} at {timestamp}"
+                  speak(f"Welcome {recognized_name}, attendance taken.")
+
+            elif attendance_dict[recognized_name]["exit"] is None:
+                 # CHECK COOLDOWN before EXIT
+                if now - last_seen.get(recognized_name, 0) > COOLDOWN:
+                   attendance_dict[recognized_name]["exit"] = timestamp
+                   last_seen[recognized_name] = now
+                   attendance_record = f"Exit - {recognized_name} at {timestamp}"
+                   speak(f"Goodbye {recognized_name}, exit recorded.")
+                else:
+                    attendance_record = None
+
+            else:
+                attendance_record = None
+
                     
-                   if attendance_record: 
-                        session_attendance.append(attendance_record)
+                if attendance_record: 
+                   session_attendance.append(attendance_record)
                         
-                        # Write to CSV
-                        exist = os.path.isfile(f"Attendance/Attendance_{date}.csv")
-                        if exist:
-                            with open(f"Attendance/Attendance_{date}.csv", "a", newline='') as csvfile:
+                   # Write to CSV
+                   exist = os.path.isfile(f"Attendance/Attendance_{date}.csv")
+                   if exist:
+                      with open(f"Attendance/Attendance_{date}.csv", "a", newline='') as csvfile:
                                 writer = csv.writer(csvfile)
                                 writer.writerow([recognized_name, timestamp, attendance_dict[recognized_name]['entry'] if 'entry' in attendance_dict[recognized_name] else '', attendance_record.split(' - ')[0]])
-                        else:
-                            os.makedirs("Attendance", exist_ok=True)
-                            with open(f"Attendance/Attendance_{date}.csv", "w", newline='') as csvfile:
-                                writer = csv.writer(csvfile)
-                                writer.writerow(['NAME', 'TIME', 'ENTRY TIME', 'STATUS'])
-                                writer.writerow([recognized_name, timestamp, attendance_dict[recognized_name]['entry'], attendance_record.split(' - ')[0]])
+                   else:
+                        os.makedirs("Attendance", exist_ok=True)
+                        with open(f"Attendance/Attendance_{date}.csv", "w", newline='') as csvfile:
+                            writer = csv.writer(csvfile)
+                            writer.writerow(['NAME', 'TIME', 'ENTRY TIME', 'STATUS'])
+                            writer.writerow([recognized_name, timestamp, attendance_dict[recognized_name]['entry'], attendance_record.split(' - ')[0]])
 
                 # --- Visuals ---
                 cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0) if recognized_name != "Unknown" else (0, 0, 255), 2)

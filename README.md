@@ -33,7 +33,20 @@ An AI-based Smart Attendance System using Face Recognition with a modern UI, sec
 
 ## 📸 Screenshots
 
-(Add screenshots here once you upload them)
+### 🔐 Login Screen
+![Login Screen](screenshots/login_page.png)
+
+### Register Screen
+![Register Screen](screenshots/register_page.png)
+
+### UI APP
+![UI APP](screenshots/ui_app.png)
+
+### 📷 Camera Preview
+![Camera Preview](screenshots/camera.png)
+
+### 📄 Attendance CSV
+![CSV](screenshots/csv.png)
 
 ---
 
