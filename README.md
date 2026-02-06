@@ -1,53 +1,85 @@
-# 📘 Smart Attendance System  
+# 🎯 Smart Face Attendance System (AI Powered)
 
-An AI-powered **face recognition-based attendance system** built using **OpenCV, DeepFace, and Python**.  
-The system captures student faces, stores them in a database, marks attendance automatically, and sends attendance reports via **WhatsApp**.  
-
----
-
-## 🚀 Features  
-
-- ✅ **Face Capture Module** – Collects face images of each student.  
-- ✅ **Face Recognition** – Uses **DeepFace (Facenet)** for high accuracy.  
-- ✅ **Attendance Logging** – Saves records in a CSV file with timestamp.  
-- ✅ **WhatsApp Report** – Sends attendance summary report automatically after camera session ends.    
-- ✅ **Lightweight GUI** – Uses OpenCV live camera feed with bounding boxes.  
+An AI-based Smart Attendance System using Face Recognition with a modern UI, secure login, and automation features like WhatsApp reporting and Email OTP reset.
 
 ---
 
-## 🏆 Tech Stack  
+## 🚀 Features
 
-- **Python**  
-- **OpenCV** – Face detection  
-- **DeepFace** – Face recognition (Facenet, VGGFace, ArcFace, etc.)  
-- **PyWhatKit** – WhatsApp automation  
-- **Pandas** – Attendance logs
+✔ Face Recognition Attendance (FaceNet + SVM)  
+✔ Real-time Camera & UI Preview  
+✔ Secure Login & Registration (Hashed Passwords)  
+✔ Role-Based Access (Teacher / Staff / HOD)  
+✔ Admin Panel (View All Users)  
+✔ Email OTP Password Reset  
+✔ WhatsApp Attendance Reports  
+✔ CSV Attendance Logs  
+✔ Modern Desktop UI (CustomTkinter)  
 
 ---
 
-## 📂 Project Structure  
+## 🛠 Tech Stack
 
-```
+- Python  
+- OpenCV  
+- FaceNet (keras-facenet)  
+- scikit-learn (SVM)  
+- CustomTkinter  
+- NumPy, Pandas  
+- bcrypt (Password Hashing)  
+- yagmail (Email OTP)  
+
+---
+
+## 📸 Screenshots
+
+(Add screenshots here once you upload them)
+
+---
+
+---
 Smart-Attendance-System/
 │
-├── data/                         # Haarcascade / model files
-│   └── deploy.prototxt
-│   └── face_embeddings.npz
-│   └── res10_300x300_ssd_iter_140000.caffemodel
+├── assets/                         # UI icons, images, logo, backgrounds
+│   ├── logo.png
+│   ├── bg.png
+│   ├── camera.png
+│   ├── start.png
+│   ├── stop.png
+│   ├── folder.png
+│   ├── csv.png
+│   ├── clear.png
+│   ├── settings.png
+│   └── help.png
 │
+├── users/                          # All registered users (role-based)
+│   └── <username>/
+│       ├── profile.json           # User profile (role, email, created date)
+│       ├── settings.json          # User preferences (camera, threshold, etc.)
+│       └── Attendance/            # Attendance CSV files per user
+│           └── Attendance_06-02-2026.csv
 │
-├── Attendance/                   # Attendance CSV reports
-│   └── attendance_2025-09-24.csv
-│   └── attendance_2025-09-23.csv
+├── data/                           # Face models & embeddings
+│   ├── deploy.prototxt            # OpenCV DNN face detector config
+│   ├── res10_300x300_ssd_iter_140000.caffemodel  # Face detector model
+│   └── faces_embeddings.npz       # Saved FaceNet embeddings
 │
-├── add_faces_facenet.py                  # Script to collect new faces
-├── test.py                       # Main face recognition + attendance
-├── whatsapp_sender.py            # Sends attendance report via WhatsApp
+├── Attendance/                    # (Optional) Global attendance folder
+│   └── Attendance_06-02-2026.csv
 │
-├── requirements.txt              # Dependencies
-└── README.md                     # Documentation
-```
-
+├── ui_app.py                      # Main UI (Camera preview + buttons + controls)
+├── login.py                       # Login screen (secure + role-based)
+├── register.py                    # Registration screen
+├── admin_panel.py                # Admin/HOD panel (view all users)
+├── email_otp_reset.py            # Email OTP password reset system
+│
+├── add_faces_facenet.py           # Collect & save new face embeddings
+├── test.py                        # Core recognition + attendance logic
+├── whatsapp_sender.py             # Sends attendance report via WhatsApp
+│
+├── users_db.json                  # User database (hashed passwords + roles + emails)
+├── requirements.txt               # Python dependencies
+└── README.md                      # Project documentation
 ---
 
 ## ⚙️ Installation  
@@ -82,111 +114,81 @@ pandas
 
 ---
 
-## 🧑‍💻 Usage  
+🧑‍💻 Usage
 
-### Step 1: Collect Faces  
-Run the following script to capture faces for a new student:  
+Step 1: Register & Login
 ```bash
-python add_faces.py
+python register.py
+python login.py
 ```
-- Enter the student’s name when prompted.  
-- The system will capture **50 images** by default.  
-- Images will be stored in `known_faces/<name>/`.  
+• Register as Teacher / Staff / HOD
+• Login securely (hashed passwords)
+• Email OTP system available for password reset
 
-### Step 2: Run Attendance System  
+Step 2: Capture Face Embeddings
 ```bash
-python test.py
+python ui_app.py
 ```
-- Opens the webcam.  
-- Detects and recognizes faces.  
-- Marks attendance with timestamp in `Attendance/attendance_<date>.csv`.  
+• Enter student name
+• Click 📷 Capture Faces
+• System captures ~100 embeddings using FaceNet
+• Saved in data/faces_embeddings.npz
 
-### Step 3: WhatsApp Attendance Report  
-- After the camera session ends, the **complete attendance report** is automatically sent via WhatsApp using `whatsapp_sender.py`.  
+Step 3: Start Attendance Session
 
----
+• Enter Subject / Class Name
+• Click ▶ Start Attendance
+• Real-time camera preview + recognition
+• Entry + Exit recorded automatically
 
-## 🧠 Face Recognition Models  
+Step 4: Reports & Automation
 
-This project supports multiple backends via **DeepFace**:  
-- **VGG-Face** (default)  
-- **Facenet**  
-- **OpenFace**  
-- **DeepFace**  
-- **ArcFace**  
-
-👉 You can change the model in `test.py`:  
-
-```python
-DeepFace.find(img_path, db_path="known_faces", model_name="Facenet")
+✔ CSV saved per user
+✔ WhatsApp report sent automatically
+✔ Data stored in:
+```bash
+users/<username>/Attendance/
 ```
 
----
+🧠 Face Recognition Model
 
-## 📸 Training Images
+This project uses:
 
-Here are some sample training images used for face recognition:
+• FaceNet for face embeddings
+• SVM (scikit-learn) for classification
+• OpenCV DNN SSD for face detection
 
-- Elon Musk Image Training :
-<img width="639" height="505" alt="Elon Musk_Train_Img" src="https://github.com/user-attachments/assets/e0c67d8d-5ff9-4a34-846e-e2ac637c28cf" />
+Pipeline:
+Camera → DNN Face Detector → FaceNet → SVM → Attendance
 
-- Bill Gates Image Training:
-<img width="640" height="504" alt="Bill Gates_Train_Img" src="https://github.com/user-attachments/assets/49a673c9-00fc-4161-85a7-1285f68bfd7a" />
+🔧 Troubleshooting
 
----
+• Camera not opening?
+Check camera index in settings
 
-## 🎯 Result
+• TensorFlow / NumPy issues?
+```bash
+pip install numpy==1.24.4
+pip install tensorflow==2.11.0
+```
+• WhatsApp not sending?
+✔ Make sure WhatsApp Web is logged in
+✔ Chrome must be open
 
-Below is an example of how the system detects and recognizes faces in real time:
+• OTP email not sent?
+✔ Enable Gmail 2-Step Verification
+✔ Use App Password
 
-- Elon Musk Live Prediction
+📌 Future Enhancements
 
-<img width="1356" height="732" alt="Elon Musk_Live_Prediction" src="https://github.com/user-attachments/assets/e1f0391e-2b43-4b2c-a704-ae6c1171ceac" />
+• 📊 Attendance Analytics Dashboard
+• 📄 PDF Export Reports
+• ☁️ Cloud DB (SQLite / MySQL / Firebase)
+• 🌐 Web Version (Flask / FastAPI)
 
--Bill Gates Live Prediction
+👩‍💻 Author
 
-<img width="1357" height="734" alt="Bill Gates_Live_Prediction" src="https://github.com/user-attachments/assets/9e0113e7-f641-465c-9b60-f7a630ac802c" /> 
+👤 Priya Thakur
+🔗 GitHub: https://github.com/Priya-1800
 
-- Attendance file (`CSV`) example:  
-
-<img width="502" height="136" alt="attendance_csv" src="https://github.com/user-attachments/assets/3626fb45-e2d0-4c07-a8b7-19a4635084b6" />
-
-- WhatsApp message example:  
-
-<img width="836" height="561" alt="whatsapp_msg" src="https://github.com/user-attachments/assets/05d5c4d1-b3a5-4815-9446-418caa1813c3" />
-
----
-
-## 🔧 Troubleshooting  
-
-- **Face not detected properly?**  
-  Use **DNN SSD / RetinaFace** instead of Haar cascades.  
-
-- **Numpy / TensorFlow errors?**  
-  Downgrade Numpy to `<2.0`:  
-  ```bash
-  pip install numpy==1.24.4
-  ```
-
-- **WhatsApp messages not sending?**  
-  - Make sure WhatsApp Web is logged in.  
-  - Instead of `pywhatkit`, you can use `pyautogui` to auto-send messages.  
-
----
-
-## 📌 Future Enhancements  
-
-- 📷 Multiple camera support  
-- 📊 Dashboard for real-time attendance  
-- 🔔 SMS / Email notification system  
-- 🧩 Cloud database (Firebase / MongoDB)  
-
----
-
-## 👩‍💻 Author  
-
-👤 **Linda Lance**  
-- [LinkedIn](https://linkedin.com/)
-- [Github](https://github.com/Linda-Lance)
-- lindalance2210@gmail.com 
-
+🔗 LinkedIn: https://www.linkedin.com/in/priya-thakur-8701a1272/
