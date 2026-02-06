@@ -15,3 +15,4 @@ Thumbs.db
 # Ignore IDE/project settings
 .vscode/
 .idea/
+pyWhatKit_db.txt

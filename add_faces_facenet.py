@@ -19,7 +19,7 @@ faces_embeddings = []
 names_list = []
 
 i = 0
-name = input("Enter Your name: ")
+name = os.getenv("PERSON_NAME") or input("Enter Name: ")
 
 print("Collecting face embeddings. Please look at the camera...")
 

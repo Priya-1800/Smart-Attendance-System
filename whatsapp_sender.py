@@ -17,4 +17,4 @@ def send_whatsapp_message(phone_number, message):
         print(f"Error sending message: {e}")
 
 if __name__ == "__main__":
-    send_whatsapp_message("+918078445837", "Hello from attendance system!")
+    send_whatsapp_message("+917410597912", "Hello from attendance system!")

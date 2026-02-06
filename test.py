@@ -11,6 +11,8 @@ from sklearn.svm import SVC
 from keras_facenet import FaceNet
 from win32com.client import Dispatch
 
+CLASS_NAME = os.getenv("CLASS_NAME", "General Class")
+
 # --- Text-to-Speech Setup ---
 tts_engine = Dispatch("SAPI.SpVoice")
 def speak(text):
@@ -96,25 +98,30 @@ while True:
                 timestamp = datetime.fromtimestamp(ts).strftime("%H:%M:%S")
 
                 if recognized_name != "Unknown":
-                    attendance_record = None
-                    if recognized_name not in attendance_dict:
-                        # Entry
-                        attendance_dict[recognized_name] = {"entry": timestamp, "exit": None}
-                        attendance_record = f"Entry - {recognized_name} at {timestamp}"
-                        speak(f"Welcome {recognized_name}, attendance taken.")
-                    elif attendance_dict[recognized_name]["exit"] is None:
-                        # Exit
-                        attendance_dict[recognized_name]["exit"] = timestamp
-                        attendance_record = f"Exit - {recognized_name} at {timestamp}"
-                        speak(f"Goodbye {recognized_name}, exit recorded.")
-                    elif recognized_name in attendance_dict and attendance_dict[recognized_name]["exit"] is not None:
-                        # Attendance already marked for the session
-                        speak(f"Attendance already marked for {recognized_name}.")
-                        pass
-                    else:
+                   if recognized_name not in attendance_dict:
+                      # ENTRY ONLY ONCE
+                      attendance_dict[recognized_name] = {"entry": timestamp}
+                      attendance_record = f"Entry - {recognized_name} at {timestamp}"
+                      speak(f"Welcome {recognized_name}, attendance taken.")
+
+                      session_attendance.append(attendance_record)
+
+                      # Write Entry to CSV
+                      exist = os.path.isfile(f"Attendance/Attendance_{date}.csv")
+                      if exist:
+                        with open(f"Attendance/Attendance_{date}.csv", "a", newline='') as csvfile:
+                            writer = csv.writer(csvfile)
+                            writer.writerow([recognized_name, timestamp, timestamp, "Entry"])
+                      else:
+                           os.makedirs("Attendance", exist_ok=True)
+                           with open(f"Attendance/Attendance_{date}.csv", "w", newline='') as csvfile:
+                               writer = csv.writer(csvfile)
+                               writer.writerow(['NAME', 'TIME', 'ENTRY TIME', 'STATUS'])
+                               writer.writerow([recognized_name, timestamp, timestamp, "Entry"])
+                   else:
                         pass
                     
-                    if attendance_record: 
+                   if attendance_record: 
                         session_attendance.append(attendance_record)
                         
                         # Write to CSV
@@ -136,6 +143,11 @@ while True:
     
     frame_resized = cv2.resize(frame, (1366, 636))
     img_bg[131:131 + 636, 0:0 + 1366] = frame_resized
+
+    present_count = len(attendance_dict)
+    cv2.putText(img_bg, f"Present: {present_count}", (50, 100),
+        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+
     cv2.imshow("Frame", img_bg)
 
     k = cv2.waitKey(1)
@@ -146,8 +158,19 @@ video.release()
 cv2.destroyAllWindows()
 
 # Generate and send the full report when the program closes.
+# Mark EXIT for everyone when session ends
+exit_time = datetime.now().strftime("%H:%M:%S")
+
+for name in attendance_dict:
+    exit_record = f"Exit - {name} at {exit_time}"
+    session_attendance.append(exit_record)
+
+    date = datetime.now().strftime("%d-%m-%Y")
+    with open(f"Attendance/Attendance_{date}.csv", "a", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([name, exit_time, attendance_dict[name]["entry"], "Exit"])
+
+# Send WhatsApp report
 if session_attendance:
-    report_message = "Attendance Report:\n\n" + "\n".join(session_attendance)
-    send_whatsapp_message("+918078445837", report_message)
-else:
-    print("No attendance records to report.")
+    report_message = f"Attendance Report - {CLASS_NAME}\n\n" + "\n".join(session_attendance)
+    send_whatsapp_message("+917410597912", report_message)

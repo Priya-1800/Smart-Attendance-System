@@ -1,10 +1,13 @@
-tensorflow==2.11.0
-numpy==1.24.4
-opencv-python
+tensorflow>=2.15.0
+tf-keras
 deepface
+opencv-python
+numpy
+pandas
 pywhatkit
 pyautogui
 pywin32
-pandas
 scikit-learn
 requests
+keras-facenet
+
